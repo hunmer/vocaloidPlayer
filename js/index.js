@@ -240,7 +240,7 @@ const animateCSS = (element, animation, styles = [], loop = true, prefix = 'anim
   </div>
   <div class="card-body">
 
-    <div class="btn-group float-right" role="group" aria-label="Button group with nested dropdown">
+    <div class="btn-group dropleft float-right" role="group">
   <button type="button" class="btn btn-secondary" onclick="add_favorite(`+data.id+`);">
 <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-heart-fill -heart `+(isFavorited ? 'text-danger' : 'text-white-50')+`" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
   <path fill-rule="evenodd" d="M8 1.314C12.438-3.248 23.534 4.735 8 15-7.534 4.736 3.562-3.248 8 1.314z"/>
@@ -251,7 +251,7 @@ const animateCSS = (element, animation, styles = [], loop = true, prefix = 'anim
   <div class="btn-group" role="group">
     <button id="btnGroupDrop1" type="button" class="btn btn-secondary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
     </button>
-    <div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
+    <div class="dropdown-menu dropdown-menu-right dropdown-menu-lg-left" aria-labelledby="btnGroupDrop1">
       <a class="dropdown-item" href="javascript: downloadVideo('`+data.id+`')"><img src="./images/download.svg"><span>Download</span></a>
       <a class="dropdown-item" href="#"><img src="./images/house.svg"><span>Open in new</span></a>
     </div>
@@ -281,7 +281,7 @@ const animateCSS = (element, animation, styles = [], loop = true, prefix = 'anim
 	});
 
   	html = html.replace('src=', 'class="embed-responsive-item" src=');
-  	dom.html('<div class="embed-responsive embed-responsive-16by9">'+html+'</div>');
+  	dom.html('<div class="embed-responsive embed-responsive-4by3">'+html+'</div>');
   	setTimeout(function(){
   		scrollToCenter($('.-video_playing'));// 再次滚动,因为大小改变了
   	}, 200);
@@ -299,27 +299,21 @@ const animateCSS = (element, animation, styles = [], loop = true, prefix = 'anim
 	}
   	return arr.join('&');
   }
-
-  function getPVUrl(id){
-  }
-
   function downloadVideo(id){
   	var html = $('.card[data-id='+id+']').attr('data-html');
 	if(html !== undefined){
 		var url = cutString(html, 'src="', '"');
 		if(url !== ''){
-			setLoading(true);
 			$.ajax({
 				url: g_api.api+'getVideoUrl.php?dump=true&url='+utf8_to_b64(url)
 			})
 			.done(function(data) {
-				window.open(data);
+				window.open(data, "_blank");
 			})
 			.fail(function() {
 				console.log("error");
 			})
 			.always(function() {
-				setLoading(false);
 			});
 		}
 	}

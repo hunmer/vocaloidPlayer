@@ -11,6 +11,10 @@ video, iframe {
 	width: 100%;
 }
 
+.-pv-list {
+	margin-bottom: 400px;
+}
+
 #pills-tab {
 	z-index: 9999;
 }
@@ -25,5 +29,5 @@ video, iframe {
 
 .-header{
 	height: 100px;
-	margin-bottom: 100px;
+	margin-bottom: 300px;
 }
