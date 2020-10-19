@@ -9,7 +9,7 @@
 	// 	'type' => 'getPlayerURL',
 	// 	'id' => '299028'
 	// ];	
-
+	$_GET['data'] = base64_decode(str_replace(' ', '+', $_GET['data']));
 	$_GET['test'] = 0;
 	
 	switch ($_GET['type']) {

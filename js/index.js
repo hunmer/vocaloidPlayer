@@ -17,6 +17,11 @@ $(function() {
 		//$('#modal1').modal('close');
 	});
 	$(window).scroll(function(event) {
+		if(g_b_scrolling){
+			event.preventDefault(true);
+			event.stopPropagation();
+			return;		
+		}
 	    var scrollTop = $(this).scrollTop();
 	    if(g_b_scroll){ // 滚出视频
 			var offset = Math.abs(Math.abs(g_i_lastTop) - Math.abs(scrollTop));
@@ -32,8 +37,8 @@ $(function() {
 	    }
 	    var i = $(document).height() - (scrollTop + $(this).height());
 		var now = new Date().getTime() / 1000;
-        g_i_lastScroll = now;	    
-	    if (i <= 30) {
+        g_i_lastScroll = now;	   
+	    if (i <= 100) {
 	        //滚动条到达底部
             if (!g_b_loading && now - g_i_loading_last >= 3) {
                 g_i_loading_last = now;
@@ -143,7 +148,7 @@ const animateCSS = (element, animation, styles = [], loop = true, prefix = 'anim
   	'params': {
 		'start': 0,
 		'getTotalCount': 'true',
-		'maxResults': 20,
+		'maxResults': 10,
 		'query': '',
 		'fields': 'AdditionalNames%2CThumbUrl',
 		'lang': 'Default',
@@ -173,7 +178,6 @@ const animateCSS = (element, animation, styles = [], loop = true, prefix = 'anim
   	}
 	 g_i_loading_last = new Date().getTime() / 1000;
   	var url = g_api.api + 'api.php?type=' + type + '&' + data_getParms(type);
-  	console.log(url);
   	$.ajax({
   		url: url,
   		dataType: 'json'
@@ -281,7 +285,7 @@ const animateCSS = (element, animation, styles = [], loop = true, prefix = 'anim
 	});
 
   	html = html.replace('src=', 'class="embed-responsive-item" src=');
-  	dom.html('<div class="embed-responsive embed-responsive-4by3">'+html+'</div>');
+  	dom.html('<div class="embed-responsive embed-responsive-16by9">'+html+'</div>');
   	setTimeout(function(){
   		scrollToCenter($('.-video_playing'));// 再次滚动,因为大小改变了
   	}, 200);
@@ -297,7 +301,7 @@ const animateCSS = (element, animation, styles = [], loop = true, prefix = 'anim
 		value = g_api.params[key];
 		arr.push(key + '=' + value);
 	}
-  	return arr.join('&');
+  	return 'data='+utf8_to_b64(arr.join('&'));
   }
   function downloadVideo(id){
   	var html = $('.card[data-id='+id+']').attr('data-html');
