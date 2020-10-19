@@ -67,7 +67,7 @@ function getFull(h, isHour, s){
     return (h === 0 && isHour ? '' : (h < 10 ? '0' + h : h) + s)
 }
 
-function replaceTime(t){
+function replaceTime1(t){
     return t.replace('T', ' ').split('.')[0];
 }
 
@@ -113,7 +113,7 @@ var g_v_favorites = local_readJson('favorites', {});
 function favorite(dom=null, json=null, b=null) {
     /*if (json === null)
         json = g_v_viewing.data;*/
-    var key = "_" + json.song.id;
+    var key = "_" + json.id;
     if (g_v_favorites[key] == undefined) {
         if (b === null)
             b = true;
@@ -128,11 +128,12 @@ function favorite(dom=null, json=null, b=null) {
     }
     if (dom.length > 0) {
         var heart = dom.find('.-heart');
-        console.log(heart);
         if(b){
             heart.addClass('text-danger').removeClass('text-white-50');
+            animateCSS(heart, 'heartBeat');
         }else{
             heart.removeClass('text-danger').addClass('text-white-50');
+            animateCSS(heart, 'flash');
         }
     }
     local_saveJson('favorites', g_v_favorites);

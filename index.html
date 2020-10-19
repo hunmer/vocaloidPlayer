@@ -27,28 +27,32 @@
 	<link rel="stylesheet" href="css/index.css">
 </head>
 <body class="container bg-dark">
-<div class="hsycms-model-mask" id="mask"></div>
+<div id="mask"></div>
 
 <ul class="nav nav-pills bg-dark fixed-bottom row row-cols-3" id="pills-tab" role="tablist">
   <li class="nav-item" role="presentation">
-    <a class="nav-link active text-center" id="pills-home-tab" data-toggle="pill" href="#pills-home" role="tab" aria-controls="pills-home" aria-selected="true">Newst</a>
+    <a class="nav-link active text-center" id="pills-newst-tab" data-toggle="pill" href="#pills-newst" role="tab" aria-controls="pills-newst" aria-selected="true" onclick="switchUI('newst')">Newst</a>
   </li>
   <li class="nav-item" role="presentation">
-    <a class="nav-link text-center" id="pills-profile-tab" data-toggle="pill" href="#pills-profile" role="tab" aria-controls="pills-profile" aria-selected="false">Ranking</a>
+    <a class="nav-link text-center" id="pills-ranking-tab" data-toggle="pill" href="#pills-ranking" role="tab" aria-controls="pills-ranking" aria-selected="false" onclick="switchUI('ranking')">Ranking</a>
   </li>
   <li class="nav-item" role="presentation">
     <a class="nav-link text-center" id="pills-contact-tab" data-toggle="pill" href="#pills-contact" role="tab" aria-controls="pills-contact" aria-selected="false">User</a>
   </li>
 </ul>
-<div class="tab-content pb-5" id="newst">
-  <div class="tab-pane fade show active" id="pills-home" role="tabpanel" aria-labelledby="pills-home-tab">
+<div class="tab-content pb-5" >
+  <div class="tab-pane fade show active" id="pills-newst" role="tabpanel" aria-labelledby="pills-newst-tab">
     <div class="-header">
     </div>
-    <div class="-pv-list">
-</div>
+    <div class="-pv-list"></div>
   	
   </div>
-  <div class="tab-pane fade" id="pills-profile" role="tabpanel" aria-labelledby="pills-profile-tab">...</div>
+  <div class="tab-pane fade" id="pills-ranking" role="tabpanel" aria-labelledby="pills-ranking-tab">
+<div class="-header">
+    </div>
+    <div class="-pv-list"></div>
+
+  </div>
   <div class="tab-pane fade" id="pills-contact" role="tabpanel" aria-labelledby="pills-contact-tab">...</div>
 </div>
 </div>
@@ -130,5 +134,7 @@
 <script src="js/bootstrap.bundle.min.js"></script>
 <script src="js/bootstrap.min.js"></script>
 <script src="js/hsycmsAlert.js"></script>
+<script src="js/clipboard.min.js"></script>
+
 <script src="js/index.js"></script>
 </html>

@@ -27,10 +27,10 @@ $(function() {
 			var offset = Math.abs(Math.abs(g_i_lastTop) - Math.abs(scrollTop));
 			var opacity = offset / g_i_lastHeight;
 			if(opacity >= 0.8){
-				$('#mask').fadeOut('slow'); // 隐藏遮罩
+				$('#mask').fadeOut('fast'); // 隐藏遮罩
 				g_b_scroll = false;
 			}else{
-				if(opacity < 0.3) opacity = 0.3;
+				if(opacity < 0.5) opacity = 0.5;
 				$('#mask').css('opacity', opacity);
 			}
 			return;
@@ -59,17 +59,39 @@ $(function() {
 			return;
 		}
 		d = d.parents(".card");
+		if(d.length === 0) return;
 		if(!d.hasClass('-video_playing')){
 			$('.-video_playing').removeClass('-video_playing');
 			d.addClass('-video_playing');
 			scrollToCenter(d);
 		}
 	}, 300);
+	$(document).on('click', '.-btn_copyUrl', function(event) {
+		if($(this).attr('data-copiable') == undefined){
+			var clipboard = new ClipboardJS('.-btn_copyUrl');
+			clipboard.on('success', function(e) {
+			    console.info('Action:', e.action);
+			    console.info('Text:', e.text);
+			    console.info('Trigger:', e.trigger);
+			    e.clearSelection();
+			});
+			this.click();
+		}
+		
+	});
 	init();
 });   
 
+function switchUI(type){
+	var con = $('#pills-'+type);
+	if(con.find('.-pv-list .card').length === 0){
+		data_query(type);
+	}
+}
+
 function next_page(){
-	data_query(g_api.type);
+	var type = $('.nav-link.active').html().toLocaleLowerCase();
+	if(type != 'user') data_query(type);
 }
 
 function scrollToCenter(dom, callback = true){
@@ -163,6 +185,13 @@ const animateCSS = (element, animation, styles = [], loop = true, prefix = 'anim
 		'since': '',
 		'userCollectionId': '',
 		'status': ''
+  	},
+  	"params_ranking": {
+  		'durationHours': 168,
+  		'fields': 'AdditionalNames%2CThumbUrl%2CTags',
+  		'vocalist': '', 
+  		'filterBy': 'CreateDate',
+  		'languagePreference': 0
   	}
   }
   g_api.defaultParams = g_api.params;
@@ -200,11 +229,19 @@ const animateCSS = (element, animation, styles = [], loop = true, prefix = 'anim
 			break;
 	}
 
-	var html = '', dom, card, c =0, player = '', isFavorited = false;
-	g_api.params.start += Object.keys(json.items).length;
-	for(var data of json.items){
+	var html = '', dom, card, c =0, player = '', isFavorited = false, url = '';
+
+	if(json.items !== undefined){
+		json = json.items;
+	}
+	g_api.params.start += Object.keys(json).length;
+	for(var data of json){
 		c++;
 		// if(c > 3) break;
+		if(data.publishDate === undefined) data.publishDate = data.createDate;
+		delete(data.favoritedTimes, data.defaultName, data.createDate, data.ratingScore, data.status, data.version);
+		g_a_details_id["_"+data.id] = data;
+
 		// 获取player地址
 		$.ajax({
 			url: g_api.api+'api.php?type=getPlayerURL&id='+data.id,
@@ -212,14 +249,15 @@ const animateCSS = (element, animation, styles = [], loop = true, prefix = 'anim
 		})
 		.done(function(detail) {
 			card = $('.card[data-id="'+detail.song.id+'"]');
-			if(card.length > 0){
+			if(card.length > 0 && g_a_details_id["_"+detail.song.id] != undefined){
 				dom = card.find('.card-img-top');
 				player = detail.playerHtml;
-
+				url = cutString(player, 'src="', '"');
 				if(player.toLocaleLowerCase().indexOf('</audio>') !== -1){
-				  		var url = cutString(player, 'src="', '"');
 				  		player = '<video src="'+url+'" poster="'+getString([detail.thumbUrl, detail.song.thumbUrl], 'images/a.jpg')+'" preload="auto" controls autoplay></video>';	
 				}
+				card.find('.-btn_copyUrl').attr('data-clipboard-text', url);
+				g_a_details_id["_"+detail.song.id].url = url;
 
 				// TODO 视频
 				if(card.hasClass('-video_playing')){ // 聚焦中
@@ -228,12 +266,12 @@ const animateCSS = (element, animation, styles = [], loop = true, prefix = 'anim
 					card.attr('data-html', player);
 				}
 			}
-			g_a_details_id["_"+detail.song.id] = detail;
 		})
 		.fail(function() {
 		})
 		.always(function() {
 		});
+
 		// {"additionalNames":"","artistString":"Kaku S feat. 巡音ルカ V4X (Unknown)","createDate":"2020-10-19T07:03:23.363","defaultName":"retro future","defaultNameLanguage":"English","favoritedTimes":0,"id":299032,"lengthSeconds":314,"name":"retro future","publishDate":"2019-06-24T00:00:00Z","pvServices":"Piapro","ratingScore":0,"songType":"Original","status":"Finished","version":1}
 // <img class="mw-100" src="./images/loading.gif" alt="`+data.artistString+`">
 		isFavorited = g_v_favorites["_"+data.id] !== undefined;
@@ -257,25 +295,35 @@ const animateCSS = (element, animation, styles = [], loop = true, prefix = 'anim
     </button>
     <div class="dropdown-menu dropdown-menu-right dropdown-menu-lg-left" aria-labelledby="btnGroupDrop1">
       <a class="dropdown-item" href="javascript: downloadVideo('`+data.id+`')"><img src="./images/download.svg"><span>Download</span></a>
-      <a class="dropdown-item" href="#"><img src="./images/house.svg"><span>Open in new</span></a>
+      <a class="dropdown-item" onclick="openInNew(`+data.id+`)"><img src="./images/house.svg"><span>Open in new</span></a>
+      <a class="dropdown-item -btn_copyUrl" onclick="hsycms.tips('tips', 'copied!', function(){}, 2000)"><img src="./images/house.svg"><span>Copy URL</span></a>
+
     </div>
   </div>
 </div>
 
 
-    <h5 class="card-title">`+data.artistString+`</h5>
+    <h5 class="card-title">`+data.name+`</h5>
     <p class="card-text">
       <a class="badge badge-dark text-white">`+getTimeFormat(data.lengthSeconds)+`</a>
       <a class="badge badge-dark text-white">`+data.defaultNameLanguage+`</a>
       <a class="badge badge-dark text-white">`+data.songType+`</a>
+      <a class="badge badge-dark text-white">`+data.artistString+`</a>
     </p>
-    <p class="card-text"><small class="text-muted">`+replaceTime(data.createDate)+`</small></p>
+    <p class="card-text"><small class="text-muted">`+data.publishDate.replace('T', ' ').replace('Z', '')+`</small></p>
   </div>
 </div>
 		`;
 	}
 	// totalCount
-	$('#'+type+' .-pv-list').append(html);
+	$('#pills-'+type+' .-pv-list').append(html);
+  }
+
+  function openInNew(id){
+  	var j = g_a_details_id[id];
+  	if(j.url !== undefined){
+  		window.open(j.url, '_blank');
+  	}
   }
 
   function player_apply(dom, html){
@@ -292,12 +340,18 @@ const animateCSS = (element, animation, styles = [], loop = true, prefix = 'anim
   }
 
   function data_getParms(type){
+  	var params;
   	switch(type){
   		case 'newst':
+  			params = g_api.params;
   			break; 
+
+  		case 'ranking':
+  			params = g_api.params_ranking;
+  			break;
 	}
 	let value, arr = [];
-	for(let key in g_api.params){
+	for(let key in params){
 		value = g_api.params[key];
 		arr.push(key + '=' + value);
 	}

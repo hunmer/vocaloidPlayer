@@ -12,7 +12,7 @@ ul,li{ list-style-type: none;}
 .hsycms-model.hsycms-model-alert,.hsycms-model.hsycms-model-confirm{ width:250px;}
 .hsycms-model.hsycms-model-model{ width:400px;}
 .hsycms-model.hsycms-model-success,.hsycms-model.hsycms-model-error{  padding:20px 12px; width:140px; }
-.hsycms-model.hsycms-model-tips{ padding:8px 12px; max-width:150px; background:rgba(0,0,0,0.6); }
+.hsycms-model.hsycms-model-tips{z-index: 9999; padding:8px 12px; max-width:150px; background:rgba(0,0,0,0.6); }
 .hsycms-model.hsycms-model-tips .hsycms-model-text{ padding:0; color:#fff; }
 .hsycms-model.hsycms-model-loading{  padding:20px 12px; width:100px; background:rgba(0,0,0,0.6); }
 .hsycms-model.hsycms-model-loading .hsycms-model-text{ padding:0; color:#fff; }

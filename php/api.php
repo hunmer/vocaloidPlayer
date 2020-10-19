@@ -24,6 +24,10 @@
 			if($_GET['test'] && file_exists($_GET['cache'])) exit(file_get_contents($_GET['cache']));
 			$url = 'https://vocadb.net/Song/PVPlayerWithRating?songId='.$_GET['id'];
 			break;
+
+		case 'ranking':
+			$url = 'https://vocadb.net/api/songs/top-rated?'.$_GET['data'];
+			break;
 			
 		default:
 			exit();
