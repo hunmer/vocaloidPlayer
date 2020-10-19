@@ -1,12 +1,7 @@
 
 var a_get = getGETArray();
-//var g_s_api = 'php/';
-var g_s_api = 'https://figurosity.glitch.me/';
-var g_localKey = 'figurosity_';
+var g_localKey = 'vocaloidPlayer_';
 // 本地储存前缀
-var g_config = local_readJson('config', {
-});
-
 function getGETArray() {
     var a_result = [], a_exp;
     var a_params = window.location.search.slice(1).split('&');
