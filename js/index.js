@@ -64,7 +64,6 @@ $(function() {
 });   
 
 function next_page(){
-	console.log(g_api.params.start);
 	data_query(g_api.type);
 }
 
@@ -139,7 +138,8 @@ const animateCSS = (element, animation, styles = [], loop = true, prefix = 'anim
 
   var g_api = {
   	'type': '',
-  	'api': 'php/',
+  	'api': 'https://neysummer-vocaloidpv.glitch.me/',
+  	// 'api': 'php/',
   	'params': {
 		'start': 0,
 		'getTotalCount': 'true',
