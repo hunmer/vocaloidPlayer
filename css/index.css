@@ -1,0 +1,29 @@
+body {
+	overflow-x: hidden;
+}
+
+.-video_playing {
+ 	transform: scale(1.1, 1.05);
+ 	z-index: 4444;
+}
+
+video, iframe {
+	width: 100%;
+}
+
+#pills-tab {
+	z-index: 9999;
+}
+
+.-pv-list .card-img-top {
+	height: auto;
+}
+
+.card-body .dropdown-item span{
+	margin-left: 5px;
+}
+
+.-header{
+	height: 100px;
+	margin-bottom: 100px;
+}
