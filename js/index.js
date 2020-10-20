@@ -11,13 +11,11 @@ var g_b_scrolld = false;
 
 var g_i_favorite_start = 0;
 $(function() {
-
 	window.history.pushState(null, null, "#");
 	window.addEventListener("popstate", function(event) {
 		window.history.pushState(null, null, "#");
 		event.preventDefault(true);
 		event.stopPropagation();
-		//$('#modal1').modal('close');
 	});
 	$(window).scroll(function(event) {
 		if(g_b_scrolling){
@@ -411,11 +409,10 @@ const animateCSS = (element, animation, attr) =>
 
   function player_apply(dom, html, id){
 	removeIframe();
-
+	var j = g_v_favorites["_"+id] !== undefined ? g_v_favorites["_"+id] : g_a_details_id["_"+id];
+	document.title = j.name + ' - ' + j.artistString;
 	if(html.indexOf('src=') === -1){ // 源地址
 		if(html.substr(-4) == '.mp3'){ // 音频
-			var j = g_v_favorites["_"+id] !== undefined ? g_v_favorites["_"+id] : g_a_details_id["_"+id];
-			console.log(j);
 			html = '<video src="'+html+'" poster="'+(j !== undefined ? j.thumbUrl : 'images/a.jpg')+'" preload="auto" controls autoplay></video>';	
 		}else{
 			html = "<iframe class='embed-responsive-item' src='"+html+"'></iframe>";
