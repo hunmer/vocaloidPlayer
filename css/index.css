@@ -30,6 +30,24 @@ video, iframe {
 }
 
 .-header{
-	height: 100px;
+	/*height: 100px;*/
 	margin-bottom: 300px;
+}
+
+#btn_toTop {
+	z-index: 9999;
+	position: fixed;
+	bottom: 45px;
+	right: 15px !important;
+}
+
+#_pointer {
+ 	height: 30px;
+ 	width: 100%;
+    position: fixed;
+    margin: auto;
+    left: 0;
+    top:0;
+    right: 0;
+    bottom: 0;	
 }

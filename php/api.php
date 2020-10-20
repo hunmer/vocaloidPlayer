@@ -10,11 +10,12 @@
 	// 	'id' => '299028'
 	// ];	
 	$_GET['data'] = base64_decode(str_replace(' ', '+', $_GET['data']));
-	$_GET['test'] = 0;
+	$_GET['test'] = 1;
 	
+	//var_dump($_GET); exit();
 	switch ($_GET['type']) {
 		case 'newst':
-			$_GET['cache'] = './cache/'.$_GET['type'].'.json';
+			$_GET['cache'] = './cache/'.md5($_GET['data']).'.json';
 			if($_GET['test'] && file_exists($_GET['cache'])) exit(file_get_contents($_GET['cache']));
 			$url = 'https://vocadb.net/api/songs?'.$_GET['data'];
 			break;
@@ -26,6 +27,8 @@
 			break;
 
 		case 'ranking':
+			$_GET['cache'] = './cache/'.md5($_GET['data']).'.json';
+			if($_GET['test'] && file_exists($_GET['cache'])) exit(file_get_contents($_GET['cache']));		
 			$url = 'https://vocadb.net/api/songs/top-rated?'.$_GET['data'];
 			break;
 			

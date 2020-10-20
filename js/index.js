@@ -7,6 +7,9 @@ var g_b_scroll = false; // 是否进入聚焦模式
 var g_i_lastTop = 0;
 var g_i_lastHeight = 0;
 var g_a_details_id = []; // id信息json列表
+var g_b_scrolld = false;
+
+var g_i_favorite_start = 0;
 $(function() {
 
 	window.history.pushState(null, null, "#");
@@ -22,6 +25,8 @@ $(function() {
 			event.stopPropagation();
 			return;		
 		}
+		if(g_b_scrolld) g_b_scrolld = false;
+
 	    var scrollTop = $(this).scrollTop();
 	    if(g_b_scroll){ // 滚出视频
 			var offset = Math.abs(Math.abs(g_i_lastTop) - Math.abs(scrollTop));
@@ -55,75 +60,120 @@ $(function() {
 		if(d.length == 0) return;
 
 		if(d.attr('id') == 'mask'){
-			//d.fadeOut('slow');
+			d.fadeOut('slow');
 			return;
 		}
 		d = d.parents(".card");
 		if(d.length === 0) return;
-		if(!d.hasClass('-video_playing')){
-			$('.-video_playing').removeClass('-video_playing');
-			d.addClass('-video_playing');
-			scrollToCenter(d);
+		if($('#mask').css('display') == 'none'){
+			$('#mask').fadeIn('slow'); // 显示
 		}
+
+		setPlaying(d);
 	}, 300);
 	$(document).on('click', '.-btn_copyUrl', function(event) {
 		if($(this).attr('data-copiable') == undefined){
 			var clipboard = new ClipboardJS('.-btn_copyUrl');
 			clipboard.on('success', function(e) {
-			    console.info('Action:', e.action);
-			    console.info('Text:', e.text);
-			    console.info('Trigger:', e.trigger);
 			    e.clearSelection();
+			    e.destroy();
 			});
 			this.click();
 		}
 		
 	});
+
+	$('button[data-value]').click(function() {
+		$(this).parents('.btn-group').find('.btn-info').removeClass('btn-info');
+		$(this).addClass('btn-info');
+		var type = $('.nav-link.active').html().toLocaleLowerCase();
+		if(type == 'ranking'){
+			g_api.params_ranking[$(this).attr('data-key')] = $(this).attr('data-value')
+		}else{
+			g_api.params[$(this).attr('data-key')] = $(this).attr('data-value');
+			g_api.params.start = 0;
+		}
+		$('#pills-'+type).find('.-pv-list').html('');
+		data_query(type);
+	});
 	init();
 });   
 
-function switchUI(type){
-	var con = $('#pills-'+type);
-	if(con.find('.-pv-list .card').length === 0){
-		data_query(type);
+function setPlaying(d){
+	if(!d.hasClass('-video_playing')){
+		$('.-video_playing').removeClass('-video_playing');
+		d.addClass('-video_playing');
+		scrollToCenter(d);
 	}
+}
+
+function switchUI(type){
+	$('#mask').hide();
+	var con = $('#pills-'+type);
+
+	if(con.find('.-pv-list .card').length === 0){
+		$('body, html').animate({scrollTop: '0px'}, 0);
+		if(type == 'user'){
+			favorte_list_load();
+		}else{
+			data_query(type);
+		}
+	}
+     g_i_lastScroll = new Date().getTime() / 1000 + 2;	   
+
 }
 
 function next_page(){
 	var type = $('.nav-link.active').html().toLocaleLowerCase();
-	if(type != 'user') data_query(type);
+	if(type == 'user'){
+		favorte_list_load();
+	}else{
+		data_query(type);
+	}
 }
 
-function scrollToCenter(dom, callback = true){
+function favorte_list_load(){
+	var keys = Object.keys(g_v_favorites);
+	var h = '', value;
+	for(var i=g_i_favorite_start;i<30;i++){
+		if(i >= keys.length) break;
+		value = g_v_favorites[keys[i]];
+		h = h + data_parseData(value, value.url);
+	}
+	g_i_favorite_start += i;
+	console.log(g_i_favorite_start);
+	$('#pills-user .-pv-list').append(h);
+}
+
+function scrollToCenter(dom, f){
 	if(dom.offset() === undefined) return;
 	var top = dom.offset().top - ($(window).height() - dom.height()) / 2;
 	g_i_lastHeight = dom.height() / 2;
 	g_i_lastTop = top;
 	g_b_scrolling = true;
-	if(callback){
-		$("html, body").animate({
-			scrollTop: top+'px',
-		}, 1000, function(){
-			g_b_scroll = true;
-			g_b_scrolling = false;
-			$('#mask').fadeIn('slow', function() {
+	$("html, body").animate({
+		scrollTop: top+'px',
+	}, 1000, function(){
+		g_b_scroll = true;
+		g_b_scrolling = false;
+		$('#mask').fadeIn('slow', function() {
 
-				$('video').each(function(i, d){
-			  		if(!d.paused) d.pause(); // stop media
-			  	});	
-				if(dom.attr('data-loaded') != 1 && dom.attr('data-html') != undefined){
-					player_apply(dom.find('.card-img-top'), dom.attr('data-html'));
-					dom.attr('data-loaded', 1);
-				}else{
-					var video = dom.find('video');
-					if(video.length > 0){
-						if(video[0].paused) video[0].play(); // 继续播放
-						return;
-					}
+			$('video').each(function(i, d){
+		  		if(!d.paused) d.pause(); // stop media
+		  	});	
+			if(dom.attr('data-loaded') != 1 && dom.attr('data-html') != undefined){
+				player_apply(dom.find('.card-img-top'), dom.attr('data-html'), dom.attr('data-id'));
+				dom.attr('data-loaded', 1);
+			}else{
+				var video = dom.find('video');
+				if(video.length > 0){
+					if(video[0].paused) video[0].play(); // 继续播放
+					return;
 				}
-			});
-		});		
-	}
+			}
+			if(typeof(f) == 'function') f();
+		});
+	});		
 }
 
 function showUI(id) {
@@ -136,25 +186,34 @@ function showUI(id) {
     });
 }
 
-const animateCSS = (element, animation, styles = [], loop = true, prefix = 'animate__') =>
-  // We create a Promise and return it
+const animateCSS = (element, animation, attr) =>
+
   new Promise((resolve, reject) => {
-    const animationName = `${prefix}${animation}`;
+
+	  if(attr.styles == undefined) attr.styles = [];
+	  if(attr.loop == undefined) attr.loop = true;
+	  if(attr.prefix == undefined) attr.prefix = 'animate__';
+	  if(attr.callback == undefined) attr.callback = function(){}
+
+
+    const animationName = `${attr.prefix}${animation}`;
     const node = element[0];
 
-    node.classList.add(`${prefix}animated`, animationName);
-    for(var style of styles){
+    node.classList.add(`${attr.prefix}animated`, animationName);
+    for(var style of attr.styles){
     	node.style.setProperty(style[0], style[1]);
     }
     // When the animation ends, we clean the classes and resolve the Promise
     function handleAnimationEnd() {
-      node.classList.remove(`${prefix}animated`, animationName);
+      node.classList.remove(`${attr.prefix}animated`, animationName);
       resolve('Animation ended');
+      if(typeof(attr.callback) == 'function') attr.callback();
     }
-    if(loop){
+    if(attr.loop){
     	node.addEventListener('animationend', handleAnimationEnd, {once: true});
     }
   });
+
 
   // 流程
   function init(){
@@ -218,6 +277,7 @@ const animateCSS = (element, animation, styles = [], loop = true, prefix = 'anim
   		console.log("error");
   	})
   	.always(function() {
+        g_i_lastScroll = new Date().getTime() / 1000 + 2;	   
   		setLoading(false);
   	});
   }
@@ -274,9 +334,16 @@ const animateCSS = (element, animation, styles = [], loop = true, prefix = 'anim
 
 		// {"additionalNames":"","artistString":"Kaku S feat. 巡音ルカ V4X (Unknown)","createDate":"2020-10-19T07:03:23.363","defaultName":"retro future","defaultNameLanguage":"English","favoritedTimes":0,"id":299032,"lengthSeconds":314,"name":"retro future","publishDate":"2019-06-24T00:00:00Z","pvServices":"Piapro","ratingScore":0,"songType":"Original","status":"Finished","version":1}
 // <img class="mw-100" src="./images/loading.gif" alt="`+data.artistString+`">
-		isFavorited = g_v_favorites["_"+data.id] !== undefined;
-		html = html + `
-		<div class="card mb-4" data-id="`+data.id+`">
+		html = html + data_parseData(data);
+	}
+	// totalCount
+	$('#pills-'+type+' .-pv-list').append(html);
+  }
+
+  function data_parseData(data, url = ''){
+	var	isFavorited = g_v_favorites["_"+data.id] !== undefined;
+  	return `
+		<div class="card mb-4" data-id="`+data.id+`" `+(url !== '' ? ' data-html="'+url+'"' : '')+`>
 	<div  class="card-img-top">
   		
   </div>
@@ -301,8 +368,6 @@ const animateCSS = (element, animation, styles = [], loop = true, prefix = 'anim
     </div>
   </div>
 </div>
-
-
     <h5 class="card-title">`+data.name+`</h5>
     <p class="card-text">
       <a class="badge badge-dark text-white">`+getTimeFormat(data.lengthSeconds)+`</a>
@@ -310,33 +375,69 @@ const animateCSS = (element, animation, styles = [], loop = true, prefix = 'anim
       <a class="badge badge-dark text-white">`+data.songType+`</a>
       <a class="badge badge-dark text-white">`+data.artistString+`</a>
     </p>
-    <p class="card-text"><small class="text-muted">`+data.publishDate.replace('T', ' ').replace('Z', '')+`</small></p>
+    
+    <button class="btn btn-light float-right" onclick="next_video();" ><img src="./images/arrow-down.svg"></button>
+    <p class="card-text"><small class="text-muted">`+data.publishDate.replace('T', ' ').split(' ')[0]+`</small></p>
   </div>
 </div>
 		`;
-	}
-	// totalCount
-	$('#pills-'+type+' .-pv-list').append(html);
+  }
+
+  function next_video(){
+  	var playing = $('.-video_playing');
+  	var next = playing.next();
+  	if(next.length > 0){
+  		g_b_loading = true; // 屏蔽事件
+  		setPlaying(next);
+  		animateCSS(playing, 'bounceOut',{
+
+  			callback: function(){
+  				setTimeout(function(){
+  					g_b_loading = false;
+	  				playing.show();
+
+	  			}, 1000);
+  			}
+  		});
+  	}
   }
 
   function openInNew(id){
-  	var j = g_a_details_id[id];
+  	var j = g_a_details_id["_"+id];
   	if(j.url !== undefined){
   		window.open(j.url, '_blank');
   	}
   }
 
-  function player_apply(dom, html){
-	$('iframe').each(function(i, d){
-		$(d).parents('.card').attr('data-loaded', null); // 清除记录
-		$(d).parents('.embed-responsive').remove(); // 移除
-	});
+  function player_apply(dom, html, id){
+	removeIframe();
 
-  	html = html.replace('src=', 'class="embed-responsive-item" src=');
+	if(html.indexOf('src=') === -1){ // 源地址
+		if(html.substr(-4) == '.mp3'){ // 音频
+			var j = g_v_favorites["_"+id] !== undefined ? g_v_favorites["_"+id] : g_a_details_id["_"+id];
+			console.log(j);
+			html = '<video src="'+html+'" poster="'+(j !== undefined ? j.thumbUrl : 'images/a.jpg')+'" preload="auto" controls autoplay></video>';	
+		}else{
+			html = "<iframe class='embed-responsive-item' src='"+html+"'></iframe>";
+		}
+	}else{
+  		html = html.replace('src=', 'class="embed-responsive-item" src=');
+	}
+
   	dom.html('<div class="embed-responsive embed-responsive-16by9">'+html+'</div>');
+  	g_b_scrolld = true;
   	setTimeout(function(){
+  	 if(g_b_scrolld){ //
   		scrollToCenter($('.-video_playing'));// 再次滚动,因为大小改变了
-  	}, 200);
+  	 }
+  	}, 100);
+  }
+
+  function removeIframe(){
+	$('iframe').each(function(i, d){
+			$(d).parents('.card').attr('data-loaded', null); // 清除记录
+			$(d).parents('.embed-responsive').remove(); // 移除
+		});
   }
 
   function data_getParms(type){
@@ -352,7 +453,7 @@ const animateCSS = (element, animation, styles = [], loop = true, prefix = 'anim
 	}
 	let value, arr = [];
 	for(let key in params){
-		value = g_api.params[key];
+		value = params[key];
 		arr.push(key + '=' + value);
 	}
   	return 'data='+utf8_to_b64(arr.join('&'));
