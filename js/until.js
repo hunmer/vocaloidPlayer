@@ -1,5 +1,8 @@
 
 var a_get = getGETArray();
+if(a_get['t'] == undefined){
+    location.href = location.href + (location.href.indexOf("?") == -1 ? "?" : '') + "&t=" + (new Date().getTime());
+}
 var g_localKey = 'vocaloidPlayer_';
 // 本地储存前缀
 function getGETArray() {
